@@ -2,7 +2,6 @@ const passport = require('passport');
 const { collection } = require('../models/clients');
 var GoogleStrategy = require('passport-google-oauth20').Strategy;
 const Client = require('../models/clients')
-collection.dropIndexes()
 const jwt = require('jsonwebtoken')
 const { createToken, refreshToken } = require('./createToken')
 
