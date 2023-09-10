@@ -1,12 +1,2 @@
 [build]
     command = 'npm run build'
-
-[build.environment]
-    NODE_VERSION = '18.x'
-
-[[redirects]]
-    from = "/*"
-    to = "/:splat"
-
-[redirects.headers]
-    X-From = "Netlify"
