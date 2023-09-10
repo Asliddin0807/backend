@@ -28,7 +28,7 @@ passport.use(new GoogleStrategy({
       username: profile.name.givenName,
       email: profile.emails[0].value,
       password: profile.name.givenName,
-      token: accessToken,
+      token: accessToken, 
     }
     if(find){
        const updateToken = await Client.findByIdAndUpdate(find.id, { refreshToken: refreshToken }, {new: true})

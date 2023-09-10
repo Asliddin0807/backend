@@ -14,20 +14,7 @@ const serviceEmail = require('../utils/nodemailer')
 const { upload } = require('../utils/cloudinary')
 const fs = require('fs')
 
-// functions
-function generateRandomCharacter() {
-    var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    var randomIndex = Math.floor(Math.random() * characters.length);
-    return characters.charAt(randomIndex);
-}
-  
-function generatePromoCode(length) {
-    var promoCode = '';
-    for (var i = 0; i < length; i++) {
-        promoCode += generateRandomCharacter();
-    }
-    return promoCode;
-}
+
 
 //registration 
 const regisUser = asyncHandler(async(req, res) => {
@@ -41,18 +28,44 @@ const regisUser = asyncHandler(async(req, res) => {
         res.status(403).json({ message: 'User is already exists!' })
     }else{
         const date = new Date()
-        var promoCode = generatePromoCode(8);
-        let month = ['Yanvar', 'Fevral', 'Mart', 'Aprel', 'May', 'Iyun', 'Iyul', 'Avgust', 'Sentabr', 'Oktbr', 'Noyabr', 'Dekabr', ]
-        let obj = {
-            promoCode: promoCode,
-            user: email,
-            price: 100 + "so'm",
-            date: `${date.getDate()} ${month[date.getMonth()]} ${date.getFullYear()}`
+        // functions
+        function generateRandomCharacter() {
+            var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            var randomIndex = Math.floor(Math.random() * characters.length);
+            return characters.charAt(randomIndex);
         }
         
-        const createNewCode = await Promokod.findOne({})
-        createNewCode.promokods.push(obj)
-        await createNewCode.save()
+        function generatePromoCode(length) {
+            var promoCode = '';
+            for (var i = 0; i < length; i++) {
+                promoCode += generateRandomCharacter();
+            }
+            return promoCode;
+        }
+        var promoCode = generatePromoCode(8);
+        let month = ['Yanvar', 'Fevral', 'Mart', 'Aprel', 'May', 'Iyun', 'Iyul', 'Avgust', 'Sentabr', 'Oktbr', 'Noyabr', 'Dekabr', ]      
+        const findPromo = await Promokod.findOne({})
+        if(findPromo){
+            const addPromo = await Promokod.updateOne({
+                $push: {
+                    promokods: [{
+                        promokod: promoCode,
+                        user: email,
+                        price: 100000,
+                        date: `${date.getDate()} ${month[date.getMonth()]} ${date.getFullYear()}`
+                    }]
+                }
+            })
+        }else{
+            const createNewCode = await Promokod.create({
+                promokods: [{
+                    promokod: promoCode,
+                    user: email,
+                    price: 100000,
+                    date: `${date.getDate()} ${month[date.getMonth()]} ${date.getFullYear()}`
+                }]
+            })
+        }
         let deviceId = uuidv4()
         let device_name = req.headers['user-agent']
         const create = new Client({
@@ -78,9 +91,6 @@ const regisUser = asyncHandler(async(req, res) => {
             promocod: create.promocod,
             token: createToken(create.id)
         }})
-        for(let prop in obj){
-            delete obj[prop]
-        }
 
         for(let prop in prom){
             delete prom[prop]
@@ -254,11 +264,13 @@ const getMentors = asyncHandler(async(req, res) => {
 
 //get categories
 const getCategories = asyncHandler(async(req, res) => {
-    const { category } = req.body
+    const { category } = req.params
     const find = await Categories.findOne({ directionsId: 1227192 })
     const findOne = find.directions.find(text => text.title === category)
     if(findOne){
-        res.status(200).json({ message: 'Success!', data: findOne })
+        const findFromCateg = await Courses.findOne()
+        findFromCateg.courses.find(text => text.course_category == findOne)
+        res.status(200).json({ message: 'Success!', data: findFromCateg })
     }else{
         res.status(404).json({ message: 'Failed!' })
     }
@@ -458,8 +470,60 @@ const sale = asyncHandler(async(req, res) => {
     }
 })
 
+//follow in mentor 
+const following = asyncHandler(async(req, res) => {
+    const { id } = req.user
+    const { mentor_name } = req.params
+    const find = await Client.findById({ _id: id })
+    if(find){
+        const mentor = await Mentors.findOne({ username: mentor_name })
+        if(mentor){
+            let obj = {
+                email: find.email,
+                username: find.username
+            }
+            const follow = mentor.studets.push(obj)
+            await mentor.save()
+            res.status(200).json({ message: 'Success' })
+        }else{
+            res.status(404).json({ message: 'Mentor is not defined!' })
+        }
+    }
+})
 
 
+//unfollowing
+const unFollowing = asyncHandler(async(req, res) => {
+    const { id } = req.user
+    const { mentor_name } = req.params
+    const findUser = await Client.findById({ _id: id })
+    if(findUser){
+        const findMentor = await Mentors.findOne({ username: mentor_name })
+        if(findMentor){
+            const unFollow = findMentor.studets.findIndex(text => text.email === findUser.email && text.username === findUser.username)
+            if(unFollow !== -1){
+                findMentor.studets.splice(unFollow, 1)
+                await findMentor.save()
+                res.status(200).json({ message: 'Success' })
+            }
+        }else{
+            res.status(404).json({ message: 'Mentor is not defined!' })
+        }
+    }
+})
+
+// get following users 
+const getFollowingUsers = asyncHandler(async(req, res) => {
+    const { mentor_name } = req.params
+    const find = await Mentors.findOne({ username: mentor_name })
+    if(find){
+        res.status(200).json({ message: 'Success!', data: find.studets })
+    }else{
+        res.status(404).json({ message: 'Failed' })
+    }
+})
+
+//getAllCategories
 
 module.exports = { 
     regisUser,
@@ -482,5 +546,7 @@ module.exports = {
     getFavourites,
     getMentorCourses,
     getUserPromocodes,
-    sale
+    following,
+    unFollowing,
+    getFollowingUsers
 }

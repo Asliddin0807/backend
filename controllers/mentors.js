@@ -31,7 +31,7 @@ const regisMentor = asyncHandler(async(req, res) => {
                 password: password,
                 deviceId: deviceId,
                 device_name: device_name,
-                directions: finds
+                directions: finds.title
             })
             await create.save()
             res.status(200).json({ message: 'Success', data: {
@@ -40,7 +40,7 @@ const regisMentor = asyncHandler(async(req, res) => {
                 password: create.password,
                 deviceId: deviceId,
                 device_name: device_name,
-                directions: finds,
+                directions: finds.title,
                 token: createToken(create.id)
             }})
         } 
@@ -49,6 +49,12 @@ const regisMentor = asyncHandler(async(req, res) => {
 
 const getStudets = asyncHandler(async(req, res) => {
     const { id } = req.mentor
+    const find = await Mentors.findById({ _id: id })
+    if(find){
+        res.status(200).json({ message: 'Success', data: find.lessons })
+    }else{
+        res.status(404).json({ message: 'Failed' })
+    }
 })
 
 //login 

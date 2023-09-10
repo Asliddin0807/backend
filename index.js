@@ -5,6 +5,7 @@ const cors = require('cors')
 const session = require('express-session')
 const passport = require('passport')
 const MemoryStore = require('memorystore')(session)
+const serverless = require('serverless-http')
 
 
 //use functions and routes
@@ -18,6 +19,12 @@ const categories = require('./routes/categories')
 
 require('dotenv').config()
 require('./config/passport')
+
+const router = express.Router()
+
+router.get('/', (req, res) => {
+  res.json({ message: 'Asliddin' })
+})
 
 //use
 app.use(express.json())
@@ -40,13 +47,13 @@ app.use(session({
   app.use(passport.session())
 
 //api
-app.use('/api/client', client)
+app.use('/.netlify/functions/api/api/client', client)
 app.use('/api/courses', courses)
 app.use('/api/mentors', mentors)
 app.use('/api/categories', categories)
 
-//server
 const PORT = process.env.PORT || 8000
 app.listen(PORT, () => {
     console.log('server is running!')
 })
+

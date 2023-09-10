@@ -35,10 +35,12 @@ const clientSchema = new mongoose.Schema({
         type: String,
     },
 
-    role: {
-        type: String,
-        default: "user"
+    isAdmin: {
+        type: Boolean,
+        default: false
     },
+
+    
 
     tarif: {
         type: String,

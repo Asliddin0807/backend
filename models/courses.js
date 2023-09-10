@@ -34,8 +34,7 @@ const courseSchema = new mongoose.Schema({
         },
     
         course_category: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Categories'
+            type: String
         },
     
         rating: [{

@@ -4,7 +4,8 @@ getUser,
 forgotPassword, 
 changePassword, 
 verifyCode, uploadImg, getAllMentors, getAllCourses, comments, 
-getCourse, getCourseComment, addFavourite, getFavourites, getMentorCourses, getUserPromocodes, sale } = require('../controllers/clientCtrl')
+getCourse, getCourseComment, addFavourite, getFavourites, getMentorCourses, getUserPromocodes, getMentorProfile,
+following, unFollowing, getFollowingUsers, getCategories, getAllCategories } = require('../controllers/clientCtrl')
 const router = require('express').Router()
 const authMiddleWare = require('../middleware/authMiddleWare')
 const multer = require('../middleware/multer')
@@ -26,7 +27,16 @@ router.post('/addFavourite/:course_id', authMiddleWare, addFavourite)
 router.get('/myFavourites', authMiddleWare, getFavourites)
 router.get('/course/:mentorId', getMentorCourses)
 router.get('/promocode', authMiddleWare, getUserPromocodes)
+router.post('/follow/:mentor_name', authMiddleWare, following)
+router.post('/unfollow/:mentor_name', authMiddleWare, unFollowing)
+router.get('/get_mentor_profile/:mentor_name', getMentorProfile)
+router.get('/get_followers/:mentor_name', getFollowingUsers)
+router.get('/get_all_categories', getAllCategories)
+router.get('/get_category/:category', getCategories)
 
+//getAllCategor
+
+//getMentorProfile
 router.get('/google', passport.authenticate('google', {
     scope: ['email', 'profile']
 }))
@@ -39,6 +49,5 @@ router.get('/google/callback', passport.authenticate('google', {
 })
  
 
-router.post('/sale/:courseId', authMiddleWare, sale)
 
 module.exports = router

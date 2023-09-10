@@ -25,14 +25,13 @@ const mentorsSchema = new mongoose.Schema({
         type: String
     },
 
-    role: {
-        type: String,
-        default: 'mentor'
+    isMentor: {
+        type: Boolean,
+        default: true
     },
 
     directions: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Categories'
+        type: String
     },
 
     lessons: {
