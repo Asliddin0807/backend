@@ -31,7 +31,7 @@
   },
   "scripts": {
     "start": "node index.js",
-    "build": "vercel index.js"  
+    "build": "vercel"  
   },
   "author": "",
   "license": "ISC",
