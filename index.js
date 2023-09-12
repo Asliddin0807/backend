@@ -5,7 +5,7 @@ const cors = require('cors')
 const session = require('express-session')
 const passport = require('passport')
 const MemoryStore = require('memorystore')(session)
-const serverless = require('serverless-http')
+
 
 
 //use functions and routes
@@ -47,7 +47,7 @@ app.use(session({
   app.use(passport.session())
 
 //api
-app.use('/.netlify/functions/api/api/client', client)
+app.use('/api/client', client)
 app.use('/api/courses', courses)
 app.use('/api/mentors', mentors)
 app.use('/api/categories', categories)
