@@ -51,6 +51,7 @@ app.use('/.netlify/functions/api/api/client', client)
 app.use('/api/courses', courses)
 app.use('/api/mentors', mentors)
 app.use('/api/categories', categories)
+app.use(express.static('public'))
 
 const PORT = process.env.PORT || 8000
 app.listen(PORT, () => {
