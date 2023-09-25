@@ -329,12 +329,14 @@ const getAllCategories = asyncHandler(async(req, res) => {
 //comments
 const comments = asyncHandler(async(req, res) => {
     const { id } = req.user
-    const { course_id } = req.params
+    const { course_id, mentor } = req.query
     const { comment } = req.body
     const find = await Client.findById({ _id: id })
     if(find){
-        const description = await Courses.findOne()
-        const app = description.courses.find(obj => obj._id == course_id)
+        const description = await Courses.findOne({
+            mentorId: mentor
+        })
+        let app = description.courses.find(text => text._id == course_id)
         if(app){
             let date = new Date()
             let month = [ '0', 'Yanvar', 'Fevral', 'Mart', 'Aprel', 'May', 'Iyun', 'Iyul', 'Sentabr', 'Oktbr', 'Noyabr', 'Dekabr',  ]
@@ -359,11 +361,14 @@ const comments = asyncHandler(async(req, res) => {
 })
 
 let getCourseComment = asyncHandler(async(req, res) => {
-    const { course_id } = req.params
-    const find = await Courses.findOne({})
-    const applic = find.courses.find(text => text._id == course_id)
-    if(applic){ 
-        res.status(200).json({ message: 'Success', data: applic })
+    const { course_id, mentor } = req.query
+    const find = await Courses.find()
+    const description = await Courses.findOne({
+        mentorId: mentor
+    })
+    let app = description.courses.find(text => text._id == course_id)
+    if(app){ 
+        res.status(200).json({ message: 'Success', data: app.rating })
     }else{
         res.status(404).json({ message: 'Not found!' })
     }
@@ -371,11 +376,16 @@ let getCourseComment = asyncHandler(async(req, res) => {
  
 //get course 
 const getCourse = asyncHandler(async(req, res) => {
-    const { course_name } = req.params
-    const find = await Courses.findOne({})
+    const { course_name } = req.query
+    const find = await Courses.findOne({
+        courses: {
+            $elemMatch: {
+                course_name: course_name
+            }
+        }
+    })
     const app = find.courses.find(text => text.course_name == course_name)
     if(app){
-        
         res.status(200).json({ message: 'Success', data: app, mentor: find.mentorId })
     }else{
         res.status(404).json({ message: 'Failure!' })

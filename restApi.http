@@ -1,0 +1,7 @@
+POST  http://www.bbb-soft.uz/api/client/login
+Content-Type: application/json
+
+{
+    "email": "komandirnuriddinov222@gmail.com",
+    "password": "123"
+}
