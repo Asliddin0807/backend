@@ -1,14 +1,14 @@
 const jwt = require('jsonwebtoken')
 require('dotenv').config()
-const Client = require('../models/clients')
+const Mentors = require('../models/mentors')
 
 const isMentor = async(req, res, next) => {
-    try{
+    
         const token = req.headers.authorization.split(' ')[1]
         if(token){
-            const decode = jwt.verify(token, procses.env.TOKEN)
-            const mentor = await Client.findById(decode?.id)
-            if(mentor.role === 'mentor'){
+            const decode = jwt.verify(token, process.env.TOKEN)
+            const mentor = await Mentors.findById(decode?.id)
+            if(mentor.isMentor === true){
                 req.mentor = mentor
                 next()
             }else{
@@ -17,9 +17,7 @@ const isMentor = async(req, res, next) => {
         }else{
             res.status(404).json({ message: 'This is no token!' })
         }
-    }catch(err){
-        res.status(500).json({ message: err })
-    }
+    
 }
 
 

@@ -350,6 +350,7 @@ const comments = asyncHandler(async(req, res) => {
                 clock: clock
             }
             app.rating.unshift(obj)
+            obj =  {}
             await description.save()
             res.status(200).json({ message: 'success', data: app })
         }else{

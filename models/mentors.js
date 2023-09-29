@@ -14,7 +14,7 @@ const mentorsSchema = new mongoose.Schema({
     },
 
     image: {
-        type: Array
+        type: String
     },
     
     deviceId: {

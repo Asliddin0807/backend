@@ -89,7 +89,7 @@ const uploadImg = asyncHandler(async(req, res) => {
     const { id } = req.admin
     const { mentor_name, lesson_number } = req.body
     const findAdmin = await Client.findById({ _id: id })
-    const findMentor = await Mentors.findOne({})
+    
     if(findAdmin){
         const find = await Courses.findOne({ mentorId: mentor_name })
         if(find){
@@ -109,14 +109,13 @@ const uploadImg = asyncHandler(async(req, res) => {
             const uploadingImage = find.courses.find(obj => obj.lesson_number == lesson_number)
             if(uploadingImage){
                 const update = uploadingImage.course_image = url
-                let objImage = {
-                    course_image: url
-                }
-                findMentor.lessons.push(objImage)
-                await findMentor.save()
-                await find.save()
+                const mentors = await Mentors.findOne({
+                    username: mentor_name
+                })
+                mentors.lessons.push(uploadingImage)
+                await mentors.save()
                 urls.length = 0
-                res.status(200).json({ message: update })
+                res.status(200).json({ message: 'Success!' })
             }else{
                 res.status(404).json({ message: 'Lesson number is not defined!' })
             }

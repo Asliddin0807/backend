@@ -7,7 +7,8 @@ const useragent = require('express-useragent')
 const { v4: uuidv4 } = require('uuid');
 const { createToken, refreshToken } = require('../config/createToken')
 const serviceEmail = require('../utils/nodemailer')
-const upload = require('../utils/cloudinary')
+const { upload } = require('../utils/cloudinary')
+const fs = require('fs')
 
 //registration 
 const regisMentor = asyncHandler(async(req, res) => {
@@ -51,7 +52,7 @@ const getStudets = asyncHandler(async(req, res) => {
     const { id } = req.mentor
     const find = await Mentors.findById({ _id: id })
     if(find){
-        res.status(200).json({ message: 'Success', data: find.lessons })
+        res.status(200).json({ message: 'Success', data: find.studets })
     }else{
         res.status(404).json({ message: 'Failed' })
     }
@@ -65,7 +66,7 @@ const login = asyncHandler(async(req, res) => {
         email: email
     })
     if(find){
-        const findPassword = await Client.findOne({
+        const findPassword = await Mentors.findOne({
             password: password
         })
         if(findPassword){
@@ -180,9 +181,8 @@ const changePassword = asyncHandler(async(req, res) => {
 
 //upload image
 const uploadImg = asyncHandler(async(req, res) => {
-    const { id } = req.user
-    try{
-        const uploader = (path) => upload(path, "images")
+    const { id } = req.mentor
+        const uploader = (path) => upload(path, "image")
         const urls = []
         const files = req.files
         for(const file of files){
@@ -191,27 +191,27 @@ const uploadImg = asyncHandler(async(req, res) => {
             urls.push(newPath)
             fs.unlinkSync(path)
         }
-        const findProd = await Mentors.findByIdAndUpdate({
-            _id: id
-        },
-        {
-            image: urls.map((file) => {return file})
-        }, 
-        { new: true }
-        )
-
-        res.status(200).json({ message: findProd })
-    }catch(error){
-        res.status(404).json({ message: 'Nout found!'})
-    }
+        let app = urls.forEach(async(obj) => {
+            const findProd = await Mentors.findByIdAndUpdate({
+                _id: id
+            },
+            {
+                image: obj.url
+            }, 
+            { new: true }
+            )
+        });
+        
+        res.status(200).json({ message: "Success!" })
+   
     
 })
 
 const getMentorCourses = asyncHandler(async(req, res) => {
     const { id } = req.mentor
-    const find = await Courses.findOne({ mentorId: id })
+    const find = await Mentors.findById({ _id: id })
     if(find){
-        res.status(200).json({ message: 'Success!', data: find.courses })
+        res.status(200).json({ message: 'Success1!', data: find.lessons })
     }else{
         res.status(404).json({ message: "You don't have courses" })
     }
@@ -227,4 +227,5 @@ module.exports = {
     changePassword,
     uploadImg,
     getMentorCourses,
+    getStudets
 }
