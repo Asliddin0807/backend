@@ -7,7 +7,7 @@ const clientSchema = new mongoose.Schema({
 
     email: {
         type: String,
-        required: true
+        required: null
     },
 
     password: {
@@ -33,6 +33,7 @@ const clientSchema = new mongoose.Schema({
 
     image: {
         type: String,
+        default: null
     },
 
     isAdmin: {
@@ -40,7 +41,9 @@ const clientSchema = new mongoose.Schema({
         default: false
     },
 
-    
+    myCourses: {
+        type: Array
+    },
 
     tarif: {
         type: String,

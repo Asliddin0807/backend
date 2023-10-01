@@ -217,6 +217,16 @@ const getMentorCourses = asyncHandler(async(req, res) => {
     }
 })
 
+const getMyFetureCourse = asyncHandler(async(req, res) => {
+    const { id } = req.mentor
+    const find = await Mentors.findById({ _id: id })
+    if(find){
+        res.status(200).json({ message: 'Success1!', data: find.featureCourses })
+    }else{
+        res.status(404).json({ message: "You don't have feature courses" })
+    }
+})
+
 
 module.exports = { 
     regisMentor,
@@ -227,5 +237,6 @@ module.exports = {
     changePassword,
     uploadImg,
     getMentorCourses,
-    getStudets
+    getStudets,
+    getMyFetureCourse
 }

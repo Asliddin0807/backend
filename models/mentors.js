@@ -38,6 +38,10 @@ const mentorsSchema = new mongoose.Schema({
         type: Array
     },
 
+    featureCourses: {
+        type: Array
+    },
+
     studets: {
         type: Array
     },

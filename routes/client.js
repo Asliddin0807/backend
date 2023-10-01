@@ -5,9 +5,10 @@ forgotPassword,
 changePassword, 
 verifyCode, uploadImg, getAllMentors, getAllCourses, comments, 
 getCourse, getCourseComment, addFavourite, getFavourites, getMentorCourses, getUserPromocodes, getMentorProfile,
-following, unFollowing, getFollowingUsers, getCategories, getAllCategories } = require('../controllers/clientCtrl')
+following, unFollowing, getFollowingUsers, getCategories, getAllCategories, getFeatureCourses, saleCourse, getMyPromocodes, getMyCourses } = require('../controllers/clientCtrl')
 const router = require('express').Router()
 const authMiddleWare = require('../middleware/authMiddleWare')
+const { isPromocode } = require('../middleware/promocode')
 const multer = require('../middleware/multer')
 const passport = require('passport')
 
@@ -33,8 +34,11 @@ router.get('/get_mentor_profile/:mentor_name', getMentorProfile)
 router.get('/get_followers/:mentor_name', getFollowingUsers)
 router.get('/get_all_categories', getAllCategories)
 router.get('/get_category/:category', getCategories)
+router.get('/get_feature_courses', getFeatureCourses),
+router.post('/sale', authMiddleWare, saleCourse)
+router.get('/myPromocode', authMiddleWare, getMyPromocodes)
+router.get('/my_courses', authMiddleWare, getMyCourses)
 
-//getAllCategor
 
 //getMentorProfile
 router.get('/google', passport.authenticate('google', {

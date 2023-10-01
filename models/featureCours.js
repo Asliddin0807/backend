@@ -1,13 +1,13 @@
 const mongoose = require('mongoose')
-
-const courseSchema = new mongoose.Schema({
+const featureCourse = new mongoose.Schema({
     mentorId: {
         type: String
     },
     
     courses: [{
         lesson_number: {
-            type: Number
+            type: Number,
+            default: 0
         },
 
         course_name: {
@@ -29,37 +29,14 @@ const courseSchema = new mongoose.Schema({
             type: String,
         },
     
-        course_video: {
-            type: String
-        },
-    
         course_category: {
             type: String
         },
 
-        duration: String,
-        
-        rating: [{
-            star: {
-                type: Number,
-                default: 0,
-            },
-    
-            comment: {
-                type: String
-            },
-    
-            postedby: {
-                type: String
-            },
-
-            date: String,
-            clock: String
-        }],
-    
+        duration: {
+            type: String
+        },
     }]
-
 })
 
-
-module.exports = mongoose.model('Courses', courseSchema)
+module.exports = mongoose.model('Feature', featureCourse)

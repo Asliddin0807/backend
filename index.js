@@ -16,6 +16,7 @@ const client = require('./routes/client')
 const courses = require('./routes/courses')
 const mentors = require('./routes/mentons')
 const categories = require('./routes/categories')
+const feature = require('./routes/featureCourse')
 
 require('dotenv').config()
 require('./config/passport')
@@ -51,6 +52,8 @@ app.use('/api/client', client)
 app.use('/api/courses', courses)
 app.use('/api/mentors', mentors)
 app.use('/api/categories', categories)
+app.use('/api/feature', feature)
+
 app.use(express.static('public'))
 
 const PORT = process.env.PORT || 8000

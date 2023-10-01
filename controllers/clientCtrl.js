@@ -4,6 +4,7 @@ const Categories = require('../models/categories')
 const Mentors = require('../models/mentors')
 const Courses = require('../models/courses')
 const Promokod = require('../models/promokod')
+const Feature = require('../models/featureCours')
 
 //packages
 const asyncHandler = require('express-async-handler')
@@ -147,7 +148,7 @@ const getUser = asyncHandler(async(req, res) => {
     if(!find){
         res.status(404).json({ message: 'User is nout find!' })
     }else{
-        res.status(200).json({ message: 'Success!', data: { find }})
+        res.status(200).json({ message: 'Success!', data: find })
     }
 })
 
@@ -377,15 +378,11 @@ let getCourseComment = asyncHandler(async(req, res) => {
  
 //get course 
 const getCourse = asyncHandler(async(req, res) => {
-    const { course_name } = req.query
+    const { course_id } = req.query
     const find = await Courses.findOne({
-        courses: {
-            $elemMatch: {
-                course_name: course_name
-            }
-        }
+        'courses._id': course_id
     })
-    const app = find.courses.find(text => text.course_name == course_name)
+    const app = find.courses.find(text => text._id == course_id)
     if(app){
         res.status(200).json({ message: 'Success', data: app, mentor: find.mentorId })
     }else{
@@ -534,7 +531,78 @@ const getFollowingUsers = asyncHandler(async(req, res) => {
     }
 })
 
-//getAllCategories
+//get feature courses
+const getFeatureCourses = asyncHandler(async(req, res) => {
+    const find = await Feature.find()
+    if(find){
+        res.status(200).json({ message: 'Success', data: find })
+    }else{
+        res.status(404).json({ message: "Failed!" })
+    }
+})
+
+const getMyPromocodes = asyncHandler(async(req, res) => {
+    const { id } = req.user
+    const find = await Client.findById({ _id: id })
+    if(!find){
+        res.status(404).json({ message: 'User is not defined!' })
+    }else{
+        res.status(200).json({ message: 'Success!', data: find.promocod })
+    }
+})
+
+const saleCourse = asyncHandler(async(req, res) => {
+    const { course_id, promocode } = req.body
+    // const { promocode } = req.promo
+    const { id } = req.user
+    const findUser = await Client.findById({ _id: id })
+    if(findUser){
+        const find = await Promokod.findOne({
+            'promokods.promokod': promocode
+        }) 
+        const app = find.promokods.find(obj => obj.promokod == promocode)
+        if(app){
+            const findCourse = await Courses.findOne({
+                courses: {
+                    $elemMatch: {
+                        _id: course_id
+                    }
+                }
+            })
+            // const public = findCourse
+            const application = findCourse.courses.find(obj => obj._id == course_id)
+            console.log(application)
+            findUser.myCourses.push(application)
+            
+            
+            const deletePromo = findUser.promocod.indexOf(promocode)
+            findUser.promocod.splice(deletePromo, 1)
+            await findUser.save()
+
+            const promo = await Promokod.findOne({
+                'promokods.promokod': promocod
+            })
+
+            const deleteIsPromocod = promo.promokods.indexOf(promocode)
+            promo.promokods.splice(deleteIsPromocod)
+            await promo.save()
+            res.status(200).json({ message: 'Success' })
+
+        }else{
+            res.status(404).json({ message: 'User is not defined!' })
+        }
+    }
+})
+
+const getMyCourses = asyncHandler(async(req, res) => {
+    const { id } = req.user
+    const find = await Client.findById({ _id: id })
+    if(find){
+        res.status(200).json({ message: 'Success!', data: find.myCourses })
+    }else{
+        res.status(404).json({ message: 'User is not defined!' })
+    }
+})
 
 module.exports = { 
     regisUser,
@@ -559,5 +627,9 @@ module.exports = {
     getUserPromocodes,
     following,
     unFollowing,
-    getFollowingUsers
+    getFollowingUsers,
+    getFeatureCourses,
+    saleCourse,
+    getMyPromocodes,
+    getMyCourses
 }
