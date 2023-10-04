@@ -580,7 +580,7 @@ const saleCourse = asyncHandler(async(req, res) => {
             await findUser.save()
 
             const promo = await Promokod.findOne({
-                'promokods.promokod': promocod
+                'promokods.promokod': promocode
             })
 
             const deleteIsPromocod = promo.promokods.indexOf(promocode)
