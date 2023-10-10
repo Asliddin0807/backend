@@ -18,13 +18,18 @@ const addCourse = asyncHandler(async(req, res) => {
         course_name, 
         course_description, 
         course_price,
-        course_category 
+        course_category,
+        course_video
     } = req.body
     const { id } = req.admin
     const findMentor = await Mentors.findOne({ username: mentor_name })
-    const findCateg = await Categories.findOne({ directionsId: 1227192 })
+    const findCateg = await Categories.findOne({})
+    
+    // findCateg.directions.forEach(obj => {
+    //     console.log(obj.title === course_category)
+    // })
     const finds = findCateg.directions.find(text => text.title == course_category)
-    console.log(finds.title)
+    console.log(finds)
     if(!finds){
         res.status(404).json({ message: 'This category is not defined!' })
     }
@@ -38,6 +43,7 @@ const addCourse = asyncHandler(async(req, res) => {
                 course_description: course_description,
                 course_price: course_price, 
                 course_category: finds.title,
+                course_video: course_video
             }
 
             let addLesson = findMentor.lessons.push(obj)
@@ -52,9 +58,10 @@ const addCourse = asyncHandler(async(req, res) => {
                         course_description: course_description,
                         course_price: course_price, 
                         course_category: finds.title,
+                        course_video: course_video
                     }]
                 })
-            res.status(200).json({ message: 'Success1!'})
+            res.status(200).json({ message: 'Success!'})
             }else{
                 const create = await Courses.findOneAndUpdate(
                     {
@@ -68,6 +75,7 @@ const addCourse = asyncHandler(async(req, res) => {
                                 course_description: course_description,
                                 course_price: course_price, 
                                 course_category: finds.title,
+                                course_video: course_video
                             }]
                         }
                     },
@@ -75,7 +83,7 @@ const addCourse = asyncHandler(async(req, res) => {
                         new: true
                     }
                 )
-                res.status(200).json({ message: 'Success2!'})
+                res.status(200).json({ message: 'Success!'})
             }
         }else{
             res.status(404).json('You are not a admin!')
@@ -90,7 +98,6 @@ const uploadImg = asyncHandler(async(req, res) => {
     const { id } = req.admin
     const { mentor_name, lesson_number } = req.body
     const findAdmin = await Client.findById({ _id: id })
-    
     if(findAdmin){
         const find = await Courses.findOne({ mentorId: mentor_name })
         if(find){
@@ -110,11 +117,16 @@ const uploadImg = asyncHandler(async(req, res) => {
             const uploadingImage = find.courses.find(obj => obj.lesson_number == lesson_number)
             if(uploadingImage){
                 const update = uploadingImage.course_image = url
+
                 const mentors = await Mentors.findOne({
                     username: mentor_name
                 })
-                mentors.lessons.push(uploadingImage)
-                await mentors.save()
+                const findCourseMentor = mentors.lessons.find(obj => obj.lesson_number == lesson_number)
+                if(!findCourseMentor){
+                    mentors.lessons.push(uploadingImage)
+                    await mentors.save()
+                }
+                await find.save()
                 urls.length = 0
                 res.status(200).json({ message: 'Success!' })
             }else{
@@ -129,34 +141,22 @@ const uploadImg = asyncHandler(async(req, res) => {
 
 const uploadVideos = asyncHandler(async(req, res) => {
     const { id } = req.admin
-    const { mentor_name, lesson_number } = req.body
+    const { mentor_name, lesson_number, course_video } = req.body
     const findAdmin = await Client.findById({ _id: id })
     const mentor = await Mentors.findOne({})
     if(findAdmin){
         const findMentor = await Courses.findOne({ mentorId: mentor_name })
         if(findMentor){
             let videoUrl = '';
-           cloudinary.uploader.upload(req.file.path, {
-                resource_type: 'video'
-           })
-           .then(async(result) => {
-               const findLesson = findMentor.courses.find(obj => obj.lesson_number == lesson_number)
-               if(!findLesson){
-                   res.status(404).json({ message: 'Lesson not defined!' }) 
-               }else{
-                    //save to base
-                    const sendToBase = findLesson.course_video = result.secure_url
-                    let obj = {
-                       course_video: result.secure_url
-                    }
-                    mentor.lessons.push(obj)
-                    await mentor.save()
-                    await findMentor.save()
-                    res.status(200).json({ message: 'Success!', base: sendToBase })
-               }
-            }).catch((er) => {
-                res.status(500).json({ message: er})
-            })
+            let obj = {
+                course_video: course_video
+            }
+            const findLesson = findMentor.courses.find(obj => obj.lesson_number == lesson_number)
+            const sendToBase = findLesson.course_video = course_video
+            mentor.lessons.push(obj)
+            await mentor.save()
+            await findMentor.save()
+            res.status(200).json({ message: 'Success!', data: sendToBase })
      }else{
          res.status(404).json({ message: 'Mentor is not defined!' })
      }

@@ -41,9 +41,7 @@ const clientSchema = new mongoose.Schema({
         default: false
     },
 
-    myCourses: {
-        type: Array
-    },
+    myCourses: [],
 
     tarif: {
         type: String,
@@ -61,6 +59,10 @@ const clientSchema = new mongoose.Schema({
     codeExpires: {
         type: Date
     }
+})
+
+clientSchema.pre('save', (next) => {
+    next()
 })
 
 module.exports = mongoose.model('Client', clientSchema)

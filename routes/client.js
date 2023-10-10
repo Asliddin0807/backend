@@ -5,7 +5,9 @@ forgotPassword,
 changePassword, 
 verifyCode, uploadImg, getAllMentors, getAllCourses, comments, 
 getCourse, getCourseComment, addFavourite, getFavourites, getMentorCourses, getUserPromocodes, getMentorProfile,
-following, unFollowing, getFollowingUsers, getCategories, getAllCategories, getFeatureCourses, saleCourse, getMyPromocodes, getMyCourses } = require('../controllers/clientCtrl')
+following, unFollowing, getFollowingUsers, getCategories, 
+getAllCategories, getFeatureCourses, 
+saleCourse, getMyPromocodes, getMyCourses, isComplatet, mathematicalMyCourses, onGoing, complatedCourse } = require('../controllers/clientCtrl')
 const router = require('express').Router()
 const authMiddleWare = require('../middleware/authMiddleWare')
 const { isPromocode } = require('../middleware/promocode')
@@ -38,6 +40,10 @@ router.get('/get_feature_courses', getFeatureCourses),
 router.post('/sale', authMiddleWare, saleCourse)
 router.get('/myPromocode', authMiddleWare, getMyPromocodes)
 router.get('/my_courses', authMiddleWare, getMyCourses)
+router.put('/complate', authMiddleWare, isComplatet)
+router.get('/mathematical', authMiddleWare, mathematicalMyCourses)
+router.get('/on_going', authMiddleWare, onGoing)
+router.get('/complateCourses', authMiddleWare, complatedCourse)
 
 
 //getMentorProfile

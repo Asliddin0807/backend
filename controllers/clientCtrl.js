@@ -6,6 +6,7 @@ const Courses = require('../models/courses')
 const Promokod = require('../models/promokod')
 const Feature = require('../models/featureCours')
 
+
 //packages
 const asyncHandler = require('express-async-handler')
 const useragent = require('express-useragent')
@@ -13,6 +14,7 @@ const { v4: uuidv4 } = require('uuid');
 const { createToken, refreshToken } = require('../config/createToken')
 const serviceEmail = require('../utils/nodemailer')
 const { upload } = require('../utils/cloudinary')
+const { getenratePromoCode } = require('../utils/generateId')
 const fs = require('fs')
 
 
@@ -310,7 +312,7 @@ const getAllCourses = asyncHandler(async(req, res) => {
     const find = await Courses.find()
     let mas = find.flatMap(text => text.courses.map(item => { return item }))
     if(find){
-        res.status(200).json({ data: mas})
+        res.status(200).json({ data: mas })
     }else{
         res.status(404).json({ message: 'Failed!' })
     }
@@ -433,11 +435,16 @@ const getMentorCourses = asyncHandler(async(req, res) => {
     const { mentorId } = req.params
     const find = await Courses.findOne({ mentorId: mentorId })
     if(find){
-        let app;
-        for(let i = 0; i < find.courses.length; i++){
-            app = find.courses[i]
-        }
-        res.status(200).json({ message: 'Success!', data: app, mentor: find.mentorId })
+        const application = find.courses.map(obj => {
+            var object = {
+                url_video: obj.course_image,
+                course_name: obj.course_name,
+                duration: "0",
+                id: obj._id
+            }
+            return object
+        })
+        res.status(200).json({ message: 'Success!', data: application, mentor: find.mentorId })
     }else{
         res.status(404).json({ message: 'Failed!' })
     }
@@ -455,28 +462,6 @@ const getUserPromocodes = asyncHandler(async(req, res) => {
     }
 })
 
-const sale = asyncHandler(async(req, res) => {
-    const { id } = req.user
-    const { course_id } = req.params
-    const { promocode } = req.body
-    const findUser = await Client.findById({ _id: id })
-    if(find){
-        const findCourse = findUser.myFavorites.find(text => text._id == course_id)
-        if(findCourse){
-            const prom = await Promokod.findOne()
-            const app = prom.promokods.find(text => text.promokod == promocode && text.user == findUser.username)
-            if(app){
-                findUser.myFavorites.filter(text => text.course_price - app.price)
-                await findUser.save()
-                res.status(200).json({ message: "Success!" })
-            }else{
-                res.status(404).json({ message: 'Promocode is not defined!' })
-            }
-        }
-    }else{
-        res.status(404).json({ message: 'Pleace sign in or sign up!' })
-    }
-})
 
 //follow in mentor 
 const following = asyncHandler(async(req, res) => {
@@ -533,9 +518,20 @@ const getFollowingUsers = asyncHandler(async(req, res) => {
 
 //get feature courses
 const getFeatureCourses = asyncHandler(async(req, res) => {
-    const find = await Feature.find()
+    const find = await Feature.findOne({})
     if(find){
-        res.status(200).json({ message: 'Success', data: find })
+        let app = find.courses.map(obj => {
+            let object = {
+                image: obj.course_image,
+                mentor_name: find.mentorId,
+                course_price: obj.course_price,
+                course_name: obj.course_name,
+                duration: '0'
+            }
+
+            return object
+        })
+        res.status(200).json({ message: 'Success', data: app })
     }else{
         res.status(404).json({ message: "Failed!" })
     }
@@ -571,23 +567,36 @@ const saleCourse = asyncHandler(async(req, res) => {
             })
             // const public = findCourse
             const application = findCourse.courses.find(obj => obj._id == course_id)
-            console.log(application)
-            findUser.myCourses.push(application)
-            
-            
-            const deletePromo = findUser.promocod.indexOf(promocode)
-            findUser.promocod.splice(deletePromo, 1)
+            let generateId = getenratePromoCode(10)
+            console.log(generateId)
+
+            let object = {
+                course_name: application.course_name,
+                course_image: application.course_image,
+                isComplate: application.isComplate,
+                lesson_number: application.lesson_number,
+                course_category: application.course_category,
+                space_id: generateId,
+                progress: application.progress,
+                duration: application.duration,
+                course_video: application.course_video
+            }
+
+            findUser.myCourses.push(object)
+            // const deletePromo = findUser.promocod.indexOf(promocode)
+            // findUser.promocod.splice(deletePromo, 1)
             await findUser.save()
 
-            const promo = await Promokod.findOne({
-                'promokods.promokod': promocode
-            })
+            // const promo = await Promokod.findOne({
+            //     'promokods.promokod': promocode
+            // })
 
-            const deleteIsPromocod = promo.promokods.indexOf(promocode)
-            promo.promokods.splice(deleteIsPromocod)
-            await promo.save()
+            // const deleteIsPromocod = promo.promokods.indexOf(promocode)
+            // promo.promokods.splice(deleteIsPromocod)
+            // await promo.save()
             res.status(200).json({ message: 'Success' })
-
+            object = {}
+        
         }else{
             res.status(404).json({ message: 'User is not defined!' })
         }
@@ -598,11 +607,100 @@ const getMyCourses = asyncHandler(async(req, res) => {
     const { id } = req.user
     const find = await Client.findById({ _id: id })
     if(find){
-        res.status(200).json({ message: 'Success!', data: find.myCourses })
+        
+        const application = find.myCourses.map(obj => {
+            var object = {
+                course_image: obj.course_image,
+                course_name: obj.course_name,
+                duration: obj.duration,
+                progress: obj.progress,
+                id: obj._id,
+                
+            }
+            return object
+        })
+        res.status(200).json({ message: 'Success!', data: application  })
     }else{
         res.status(404).json({ message: 'User is not defined!' })
     }
 })
+
+
+const isComplatet = asyncHandler(async(req, res) => {
+    const { id } = req.user
+    const { space_id } = req.body    
+    const finds = await Client.findById({
+        _id: id
+    })
+    if(!finds){
+        res.status(200).json({ message: 'failure!' })
+    }
+
+    const findCourse = await Client.updateMany({
+        'myCourses.space_id': space_id
+    },
+    {
+        'myCourses.$.isComplate': true
+    })
+    
+    if(!findCourse){
+        res.status(404).json({ message: 'space id is not defined!' })
+    }
+
+    res.status(200).json({ message: 'Success!' })
+})
+
+const mathematicalMyCourses = asyncHandler(async(req, res) => {
+    const { id } = req.user
+    const find = await Client.findById({ _id: id })
+    if(!find){
+        res.status(404).json({ message: 'User is not defined!' })
+    }
+
+    const courseIsComplate = find.myCourses.filter(obj => obj.isComplate == true)
+    if(!courseIsComplate){
+        res.status(404).json({ message: 'course is not defined!' })
+    }
+
+    let procent = (courseIsComplate.length * 100) / find.myCourses.length
+    let parses = parseInt(procent)
+    
+    res.status(200).json({ message: 'Success!', complate: parses })
+
+})
+
+const complatedCourse = asyncHandler(async(req, res) => {
+    const { id } = req.user
+    const find = await Client.findById({ _id: id })
+    if(!find){
+        res.status(404).json({ message: 'Place sign in or sign up!' })
+    }
+
+    const complate = find.myCourses.find(obj => obj.isComplate == true)
+    res.status(200).json({ message: 'Success!', data: complate })
+})
+
+
+const onGoing = asyncHandler(async(req, res) => {
+    const { id } = req.user
+    const find = await Client.findById({ _id: id })
+    if(!find){
+        res.status(404).json({ message: 'Place sign in or sign up!' })
+    }
+
+    const courseIsComplate = find.myCourses.filter(obj => obj.isComplate == true)
+    if(!courseIsComplate){
+        res.status(404).json({ message: 'course is not defined!' })
+    }
+
+    let procent = (courseIsComplate.length * 100) / find.myCourses.length
+    let parses = parseInt(procent)
+
+    const app = find.myCourses.filter(obj => obj.isComplate == false)
+    res.status(200).json({ message: 'Success!', data: app })
+})
+
+
 
 module.exports = { 
     regisUser,
@@ -631,5 +729,9 @@ module.exports = {
     getFeatureCourses,
     saleCourse,
     getMyPromocodes,
-    getMyCourses
+    getMyCourses,
+    isComplatet,
+    mathematicalMyCourses,
+    onGoing,
+    complatedCourse
 }

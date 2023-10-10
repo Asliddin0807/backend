@@ -1,9 +1,12 @@
 const mongoose = require('mongoose')
 
 const courseSchema = new mongoose.Schema({
+    
     mentorId: {
         type: String
     },
+
+    name: String,
     
     courses: [{
         lesson_number: {
@@ -37,8 +40,16 @@ const courseSchema = new mongoose.Schema({
             type: String
         },
 
-        duration: String,
+        duration: {
+            type: String,
+            default: "00:00"
+        },
         
+        isComplate: {
+            type: Boolean,
+            default: false
+        },
+
         rating: [{
             star: {
                 type: Number,
@@ -57,7 +68,12 @@ const courseSchema = new mongoose.Schema({
             clock: String
         }],
     
-    }]
+    }],
+
+    progress: {
+        type: Number,
+        default: 0
+    },
 
 })
 
